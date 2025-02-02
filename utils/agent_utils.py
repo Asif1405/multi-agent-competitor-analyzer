@@ -52,7 +52,7 @@ def get_search_results(
     print(query)
     urls = []
     try:
-        for url in search(query, num=5, stop=5, pause=2):
+        for url in search(query, num=3, stop=3, pause=1):
             print(url, "url") 
             urls.append(url)
     except Exception as e:
@@ -79,7 +79,10 @@ def extract_competitor_names(
     prompt = f"""
     Extract and list company names from the following text:
     {text}
-    Only return company names, no extra text, symbols, separators or URLs.
+    Only return company names, no extra text, symbols, separators, special characters, or numbers.
+    Remove any duplicates and irrelevant names.
+    Remove any name that is not related to product brands.
+    Remove any name that is not a company or brand.
     """
     try:
         response = client.chat.completions.create(
@@ -175,6 +178,7 @@ def generate_competitor_analysis(
                 {"role": "user", "content": prompt}
             ]
         )
+        print("Done")
         return response.choices[0].message.content.strip()
     except Exception as e:
         log_thought(f"OpenAI API error: {e}")
