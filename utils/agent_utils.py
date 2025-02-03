@@ -22,7 +22,7 @@ def retry(
     func: callable,
     *args: List[Any],
     retries: int = 3,
-    delay: int = 2, 
+    delay: int = 2,
     **kwargs: Dict[str, Any]
 ) -> any:
     """Retries a function in case of failure."""
@@ -53,7 +53,7 @@ def get_search_results(
     urls = []
     try:
         for url in search(query, num=3, stop=3, pause=1):
-            print(url, "url") 
+            print(url, "url")
             urls.append(url)
     except Exception as e:
         log_thought(f"Error searching Google: {e}")
@@ -63,15 +63,22 @@ def get_search_results(
 def clean_competitor_names(names: List[str]) -> List[str]:
     """Cleans and removes duplicate and irrelevant competitor names."""
     cleaned_names = list(set(names))  # Remove duplicates
-    filtered_names = [name.strip() for name in cleaned_names if \
-                      len(name.strip()) > 1 and not any(c in name for c in \
-                        ["review", "comparison", "site"])]
-    filtered_names = re.sub(r'[^a-zA-Z0-9\s]', '', ' '.join(filtered_names)).split()
+    filtered_names = [
+        name.strip() for name in cleaned_names if len(
+            name.strip()) > 1 and not any(
+            c in name for c in [
+                "review",
+                "comparison",
+                "site"])]
+    filtered_names = re.sub(
+        r'[^a-zA-Z0-9\s]',
+        '',
+        ' '.join(filtered_names)).split()
     return filtered_names
 
 
 def extract_competitor_names(
-    client: openai.Client, 
+    client: openai.Client,
     text: str
 ) -> List[str]:
     """Uses GPT-4o to extract competitor brand names from web page content."""
@@ -92,7 +99,8 @@ def extract_competitor_names(
                 {"role": "user", "content": prompt}
             ]
         )
-        return clean_competitor_names(response.choices[0].message.content.strip().split("\n"))
+        return clean_competitor_names(
+            response.choices[0].message.content.strip().split("\n"))
     except Exception as e:
         log_thought(f"OpenAI API error: {e}")
         return []
@@ -113,7 +121,8 @@ def extract_company_info(url: str) -> Dict[str, str]:
         response = requests.get(url, headers=headers, timeout=5)
         soup = BeautifulSoup(response.text, "html.parser")
         title = soup.title.text if soup.title else ""
-        description = " ".join([p.text for p in soup.find_all("p")])[:2000]  # Limit text to 2000 chars
+        description = " ".join([p.text for p in soup.find_all("p")])[
+            :2000]  # Limit text to 2000 chars
         return {"website": url, "title": title, "description": description}
     except Exception as e:
         log_thought(f"Error scraping {url}: {e}")
@@ -131,7 +140,15 @@ def search_external_data(company_name: str) -> Dict[str, str]:
     ]
     data = ""
     for query in queries:
-        result = retry(lambda: extract_company_info(next(search(query, num=3, stop=3, pause=2), None)))
+        result = retry(
+            lambda: extract_company_info(
+                next(
+                    search(
+                        query,
+                        num=3,
+                        stop=3,
+                        pause=2),
+                    None)))
         if result:
             data += result.get("description", "") + "\n"
     return {"description": data}
@@ -139,7 +156,7 @@ def search_external_data(company_name: str) -> Dict[str, str]:
 
 def generate_competitor_analysis(
     client: openai.Client,
-    company_name: str, 
+    company_name: str,
     company_data: Dict[str, str],
     external_data: Dict[str, str]
 ) -> str:
@@ -165,10 +182,15 @@ def generate_competitor_analysis(
     - Unique Selling Proposition (USP)
     - Online Presence & Branding
     - Marketing & Advertising Strategy
-    - Customer Review Summary
+    - Key Products & Services
+    - Customer Review Summary & Sentiment
     - Market and Financial Data
     - Third-Party Evaluation
     - Key Takeaways
+
+    Please ensure the report is detailed, accurate, and well-structured.
+    Provide actionable insights and recommendations for the user.
+    Provide references and citations where necessary.
     """
     try:
         response = client.chat.completions.create(
@@ -183,4 +205,3 @@ def generate_competitor_analysis(
     except Exception as e:
         log_thought(f"OpenAI API error: {e}")
         return ""
-    

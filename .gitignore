@@ -2,7 +2,7 @@
 /env
 .env
 .DS_Store
-__pycache__/
+/__pycache__/
 
 # __pycache__ in all subdirectories
 **/__pycache__/
