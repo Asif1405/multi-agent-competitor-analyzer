@@ -13,7 +13,11 @@ class Settings(BaseSettings):
 
 
     # OpenAI API key
-    OPENAI_API_KEY: str = Field(...
+    OPENAI_API_KEY: str = Field(default=""
                                 , env="OPENAI_API_KEY")
+
+    # Serper API key
+    SERPER_API_KEY: str = Field(default=""
+                                , env="SERPER_API_KEY")
 
 settings = Settings()

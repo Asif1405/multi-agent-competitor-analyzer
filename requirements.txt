@@ -62,3 +62,6 @@ tzdata==2025.1
 urllib3==2.3.0
 uvicorn==0.34.0
 websockets==14.2
+langgraph==0.2.55
+langchain==0.3.13
+langchain-openai==0.2.13
